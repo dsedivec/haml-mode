@@ -62,6 +62,11 @@ re-indented along with the line itself."
   :type 'boolean
   :group 'haml)
 
+(defcustom haml-compile-at-save nil
+  "Non-nil to have Haml buffers compiled after each save"
+  :type 'boolean
+  :group 'haml)
+
 (defvar haml-indent-function 'haml-indent-p
   "A function for checking if nesting is allowed.
 This function should look at the current line and return t
@@ -389,6 +394,7 @@ With ARG, do it that many times."
     (define-key map "\C-c\C-k" 'haml-kill-line-and-indent)
     (define-key map "\C-c\C-r" 'haml-output-region)
     (define-key map "\C-c\C-l" 'haml-output-buffer)
+    (define-key map "\C-c\C-c" 'haml-compile)
     map))
 
 ;;;###autoload
@@ -396,6 +402,7 @@ With ARG, do it that many times."
   "Major mode for editing Haml files.
 
 \\{haml-mode-map}"
+  (add-hook 'after-save-hook 'haml-compile-maybe nil t)
   (set-syntax-table haml-mode-syntax-table)
   (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-filters-comments)
   (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-multiline-hashes)
@@ -749,6 +756,24 @@ the current line."
 (defun haml-indent-string ()
   "Return the indentation string for `haml-indent-offset'."
   (mapconcat 'identity (make-list haml-indent-offset " ") ""))
+
+(defun haml-compile-maybe ()
+  "Run `haml-compile' if `haml-compile-at-save' is non-nil and
+the buffer file name does not look like a view file."
+  (and haml-compile-at-save
+       (not (string-match "/views/" buffer-file-name))  ; exclude templates
+       (haml-compile)))
+
+(defun haml-compile ()
+  "Compile the current buffer, haml filename.haml filename.html"
+  (interactive)
+  (compile
+   (concat
+    haml-command " "
+    (shell-quote-argument buffer-file-name) " "
+    (shell-quote-argument
+     (and (string-match "\\(.+?\\)\\(\\.haml\\)?$" buffer-file-name)
+          (concat (match-string 1 buffer-file-name) ".html"))))))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.haml$" . haml-mode))
