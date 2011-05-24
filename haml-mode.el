@@ -62,11 +62,6 @@ re-indented along with the line itself."
   :type 'boolean
   :group 'haml)
 
-(defcustom haml-compile-at-save nil
-  "Non-nil to have Haml buffers compiled after each save"
-  :type 'boolean
-  :group 'haml)
-
 (defvar haml-indent-function 'haml-indent-p
   "A function for checking if nesting is allowed.
 This function should look at the current line and return t
@@ -395,6 +390,7 @@ With ARG, do it that many times."
     (define-key map "\C-c\C-r" 'haml-output-region)
     (define-key map "\C-c\C-l" 'haml-output-buffer)
     (define-key map "\C-c\C-c" 'haml-compile)
+    (define-key map "\C-c\C-o\C-s" 'haml-cos-mode)
     map))
 
 ;;;###autoload
@@ -757,13 +753,6 @@ the current line."
   "Return the indentation string for `haml-indent-offset'."
   (mapconcat 'identity (make-list haml-indent-offset " ") ""))
 
-(defun haml-compile-maybe ()
-  "Run `haml-compile' if `haml-compile-at-save' is non-nil and
-the buffer file name does not look like a view file."
-  (and haml-compile-at-save
-       (not (string-match "/views/" buffer-file-name))  ; exclude templates
-       (haml-compile)))
-
 (defun haml-compile ()
   "Compile the current buffer, haml filename.haml filename.html"
   (interactive)
@@ -774,6 +763,18 @@ the buffer file name does not look like a view file."
     (shell-quote-argument
      (and (string-match "\\(.+?\\)\\(\\.haml\\)?$" buffer-file-name)
           (concat (match-string 1 buffer-file-name) ".html"))))))
+
+(defvar haml-cos-mode-line " CoS")
+(make-variable-buffer-local 'haml-cos-mode-line)
+
+(define-minor-mode haml-cos-mode
+  "Toggle compile-on-save for haml-mode."
+  :group 'haml :lighter haml-cos-mode-line
+  (cond
+   (haml-cos-mode
+    (add-hook 'after-save-hook 'haml-compile nil t))
+   (t
+    (remove-hook 'after-save-hook 'haml-compile t))))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.haml$" . haml-mode))
