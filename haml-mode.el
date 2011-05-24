@@ -755,13 +755,17 @@ the current line."
 (defun haml-compile ()
   "Compile the current buffer, haml filename.haml filename.html"
   (interactive)
-  (compile
-   (concat
-    haml-command " "
-    (shell-quote-argument buffer-file-name) " "
-    (shell-quote-argument
-     (and (string-match "\\(.+?\\)\\(\\.haml\\)?$" buffer-file-name)
-          (concat (match-string 1 buffer-file-name) ".html"))))))
+  (when (string-match "\\(.+?\\)\\(\\.haml\\)?$" buffer-file-name)
+    (shell-command
+     (format "%s %s %s.html"
+             haml-command
+             (shell-quote-argument buffer-file-name)
+             (shell-quote-argument (match-string 1 buffer-file-name))))))
+
+(defun haml-compile-if-haml ()
+  "Compile the current buffer if the file name is *.haml."
+  (if (string-match ".+\\.haml$" buffer-file-name)
+      (haml-compile)))
 
 (defvar haml-cos-mode-line " CoS")
 (make-variable-buffer-local 'haml-cos-mode-line)
@@ -771,9 +775,9 @@ the current line."
   :group 'haml :lighter haml-cos-mode-line
   (cond
    (haml-cos-mode
-    (add-hook 'after-save-hook 'haml-compile nil t))
+    (add-hook 'after-save-hook 'haml-compile-if-haml nil t))
    (t
-    (remove-hook 'after-save-hook 'haml-compile t))))
+    (remove-hook 'after-save-hook 'haml-compile-if-haml t))))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.haml$" . haml-mode))
