@@ -398,7 +398,6 @@ With ARG, do it that many times."
   "Major mode for editing Haml files.
 
 \\{haml-mode-map}"
-  (add-hook 'after-save-hook 'haml-compile-maybe nil t)
   (set-syntax-table haml-mode-syntax-table)
   (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-filters-comments)
   (add-to-list 'font-lock-extend-region-functions 'haml-extend-region-multiline-hashes)
