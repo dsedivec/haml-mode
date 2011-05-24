@@ -50,6 +50,11 @@
   :type 'integer
   :group 'haml)
 
+(defcustom haml-command "haml"
+  "The haml command used for compiling Haml."
+  :type 'string
+  :group 'haml)
+
 (defcustom haml-backspace-backdents-nesting t
   "Non-nil to have `haml-electric-backspace' re-indent blocks of code.
 This means that all code nested beneath the backspaced line is
@@ -439,7 +444,7 @@ Called from a program, START and END specify the region to indent."
     (let ((ci (current-indentation)))
       (while (re-search-forward "^ +" end t)
         (replace-match (make-string (- (current-indentation) ci) ? ))))
-    (shell-command-on-region start end "haml" "haml-output" t)))
+    (shell-command-on-region start end haml-command "haml-output" t)))
 
 (defun haml-output-region (start end)
   "Displays the HTML output for the current block of Haml code.
@@ -449,7 +454,7 @@ Called from a program, START and END specify the region to indent."
   (with-temp-buffer
     (yank)
     (haml-indent-region (point-min) (point-max))
-    (shell-command-on-region (point-min) (point-max) "haml" "haml-output")))
+    (shell-command-on-region (point-min) (point-max) haml-command "haml-output")))
 
 (defun haml-output-buffer ()
   "Displays the HTML output for entire buffer."
