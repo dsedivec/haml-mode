@@ -19,6 +19,16 @@
 ;; your .emacs file:
 ;;
 ;; (require 'haml-mode)
+;;
+;; Hitting the key sequence `C-c C-o C-s` turns on (toggles) the
+;; compile-on-save minor mode in `haml-mode`.  To automatically enable
+;; it if there is already a .html file of the same base name beside:
+;;
+;; (add-hook 'haml-mode-hook '(lambda ()
+;;                              (and (file-exists-p (buffer-file-name))
+;;                                   (file-exists-p (haml-compiled-file-name))
+;;                                   (haml-cos-mode t))))
+;;
 
 ;;; Code:
 
