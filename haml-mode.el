@@ -755,12 +755,18 @@ the current line."
 (defun haml-compile ()
   "Compile the current buffer, haml filename.haml filename.html"
   (interactive)
-  (when (string-match "\\(.+?\\)\\(\\.haml\\)?$" buffer-file-name)
-    (shell-command
-     (format "%s %s %s.html"
-             haml-command
-             (shell-quote-argument buffer-file-name)
-             (shell-quote-argument (match-string 1 buffer-file-name))))))
+  (shell-command
+   (mapconcat 'shell-quote-argument
+              (list haml-command (buffer-file-name) (haml-compiled-file-name))
+              " ")))
+
+(defun haml-compiled-file-name (&optional filename)
+  "Returns the name of the HTML file compiled from a Haml file.
+If FILENAME is omitted, the current buffer's file name is used."
+  (let ((filename (or filename (buffer-file-name))))
+    (concat (if (string= ".haml" (file-name-extension filename t))
+                (file-name-sans-extension filename)
+              filename) ".html")))
 
 (defun haml-compile-if-haml ()
   "Compile the current buffer if the file name is *.haml."
