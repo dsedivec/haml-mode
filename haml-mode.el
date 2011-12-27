@@ -122,7 +122,7 @@ The line containing RE is matched, as well as all lines indented beneath it."
 (defconst haml-filter-re "^[ \t]*:\\w+")
 (defconst haml-comment-re "^[ \t]*\\(?:-\\#\\|/\\)")
 
-(defun haml-fontify-region (beg end keywords syntax-table syntactic-keywords)
+(defun haml-fontify-region (beg end keywords syntax-table syntactic-keywords-or-propertize-function)
   "Fontify a region between BEG and END using another mode's fontification.
 
 KEYWORDS, SYNTAX-TABLE, and SYNTACTIC-KEYWORDS are the values of that mode's
@@ -132,7 +132,10 @@ and `font-lock-syntactic-keywords', respectively."
     (save-match-data
       (let ((font-lock-keywords keywords)
             (font-lock-syntax-table syntax-table)
-            (font-lock-syntactic-keywords syntactic-keywords)
+            (font-lock-syntactic-keywords (unless (functionp syntactic-keywords-or-propertize-function)
+                                              syntactic-keywords-or-propertize-function))
+            (syntax-propertize-function (when (functionp syntactic-keywords-or-propertize-function)
+                                          syntactic-keywords-or-propertize-function))
             (font-lock-multiline 'undecided)
             font-lock-keywords-only
             font-lock-extend-region-functions
@@ -145,7 +148,9 @@ and `font-lock-syntactic-keywords', respectively."
   "Use Ruby's font-lock variables to fontify the region between BEG and END."
   (haml-fontify-region beg end ruby-font-lock-keywords
                        ruby-font-lock-syntax-table
-                       ruby-font-lock-syntactic-keywords))
+                       (if (boundp 'ruby-font-lock-syntactic-keywords)
+                           ruby-font-lock-syntactic-keywords
+                          'ruby-syntax-propertize-function)))
 
 (defun haml-handle-filter (filter-name limit fn)
   "If a FILTER-NAME filter is found within LIMIT, run FN on that filter.
@@ -738,6 +743,7 @@ the current line."
   (interactive "*p")
   (if (or (/= (current-indentation) (current-column))
           (bolp)
+          (eobp)
           (looking-at "^[ \t]+$"))
       (backward-delete-char arg)
     (save-excursion
