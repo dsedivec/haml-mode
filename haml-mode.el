@@ -193,6 +193,8 @@ elsewhere."
                       (and (featurep 'javascript-mode) js-font-lock-keywords-3)))
         (syntax-table (or (and (featurep 'js) js-mode-syntax-table)
                           (and (featurep 'javascript-mode) javascript-mode-syntax-table))))
+    (when (and (boundp 'js--quick-match-re) (null js--quick-match-re))
+      (js--update-quick-match-re))
     (when keywords
       (haml-fontify-filter-region "javascript" limit keywords syntax-table nil))))
 
