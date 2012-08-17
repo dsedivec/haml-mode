@@ -804,7 +804,7 @@ If FILENAME is omitted, the current buffer's file name is used."
     (remove-hook 'after-save-hook 'haml-compile-if-haml t))))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.haml$" . haml-mode))
+(add-to-list 'auto-mode-alist '("\\.haml\\'" . haml-mode))
 
 ;; Setup/Activation
 (provide 'haml-mode)
